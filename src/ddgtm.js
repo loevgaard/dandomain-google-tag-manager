@@ -1,5 +1,12 @@
 (function ($) {
+    var debug = true;
     var dataLayerName = 'dataLayer';
+
+    function log(str) {
+        if(window.console) {
+            console.log(str);
+        }
+    }
 
     /**
      * Returns null if product number format is not {product number}-{variant}
@@ -15,8 +22,8 @@
         }
 
         return {
-            'master' :  m[1],
-            'variant' : m[2]
+            'master'    : m[1],
+            'variant'   : m[2]
         };
     }
     var page = {
@@ -30,7 +37,9 @@
             if(!url) {
                 url = location.href;
             }
-            return url.match(/\-[0-9]+p\.html/i) != null;
+            var isProduct = url.match(/\-[0-9]+p\.html/i) != null;
+            log("Is Product Page?" + (isProduct ? 'Yes' : 'No'));
+            return isProduct;
         },
         /**
          * A product list is either a category page (c1.html) or a category page with sub categories (s1.html)
@@ -42,7 +51,9 @@
             if(!url) {
                 url = location.href;
             }
-            return url.match(/\-[0-9]+(s|c)[0-9]+]\.html/i) != null;
+            var isProductList = url.match(/\-[0-9]+(s|c)[0-9]+]\.html/i) != null;
+            log("Is Product List Page?" + (isProductList ? 'Yes' : 'No'));
+            return isProductList;
         }
     };
 
@@ -226,8 +237,8 @@
             }
             dataLayerObject.event = eventName;
 
-            console.log("Pushing data layer:");
-            console.log(dataLayerObject);
+            log("Pushing data layer:");
+            log(dataLayerObject);
             window[dataLayerName].push(dataLayerObject);
         },
         setDataLayerName: function(name) {
@@ -235,6 +246,9 @@
         },
         setSelector: function(val) {
             selectors = val;
+        },
+        debug: function(toggle) {
+            debug = toggle;
         }
     };
 
