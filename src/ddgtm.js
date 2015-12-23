@@ -105,7 +105,7 @@
                 },
                 products: {
                     container: function() {
-                        $(".ProductList_Custom_UL li");
+                        return $(".ProductList_Custom_UL li");
                     },
                     id: function() {
                         return $(this).find('input[name="ProductID"]').val();
