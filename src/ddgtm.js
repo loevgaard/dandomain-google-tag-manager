@@ -66,6 +66,9 @@
                 eventName = 'ddgtm';
             }
             dataLayerObject.event = eventName;
+
+            console.log("Pushing data layer:");
+            console.log(dataLayerObject);
             window[dataLayerName].push(dataLayerObject);
         },
         setDataLayerName: function(name) {
