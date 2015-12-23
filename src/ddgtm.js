@@ -54,6 +54,18 @@
             var isProductList = url.match(/\-[0-9]+(s|c)[0-9]+\.html/i) != null;
             log("Is Product List Page?" + (isProductList ? 'Yes' : 'No'));
             return isProductList;
+        },
+        /**
+         * @param url
+         * @returns boolean
+         */
+        isPurchase: function (url) {
+            if(!url) {
+                url = location.href;
+            }
+            var isPurchase = url.match(/\/shop\/order4\.html/i) != null;
+            log("Is Purchase Page?" + (isPurchase ? 'Yes' : 'No'));
+            return isPurchase;
         }
     };
 
