@@ -51,7 +51,7 @@
             if(!url) {
                 url = location.href;
             }
-            var isProductList = url.match(/\-[0-9]+(s|c)[0-9]+]\.html/i) != null;
+            var isProductList = url.match(/\-[0-9]+(s|c)[0-9]+\.html/i) != null;
             log("Is Product List Page?" + (isProductList ? 'Yes' : 'No'));
             return isProductList;
         }
