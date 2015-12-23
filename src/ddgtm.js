@@ -1,5 +1,24 @@
 (function ($) {
     var dataLayerName = 'dataLayer';
+
+    /**
+     * Returns null if product number format is not {product number}-{variant}
+     * Returns object with master and variant attributes if the product number format is {product number}-{variant}
+     *
+     * @param productNumber
+     * @returns {*}
+     */
+    function getProductNumberParts(productNumber) {
+        var m = productNumber.match(/^([0-9]+)\-(.*)$/);
+        if(!m) {
+            return null;
+        }
+
+        return {
+            'master' :  m[1],
+            'variant' : m[2]
+        };
+    }
     var page = {
         /**
          * Matches a product page (i.e. 1231p.html)
@@ -30,13 +49,112 @@
     var selectors = {
         pages: {
             product: {
-                id:         "",
-                name:       "",
-                price:      "",
-                brand:      "",
-                category:   "",
-                variant:    "",
-                list:       ""
+                id: function() {
+                    // this is a global variable defined by Dandomain
+                    return window.ProductVariantMasterID;
+                },
+                name: function() {
+                    return $('span[itemprop="name"]:first').text();
+                },
+                price: function() {
+                    return $('span[itemprop="price"]:first').text();
+                },
+                brand: function() {
+                    return $('span[itemprop="brand"]:first').text();
+                },
+                category: function() {
+                    return "";
+                },
+                variant: function() {
+                    var variant = window.ProductNumber.replace(window.ProductVariantMasterID, "");
+                    if(variant) {
+                        variant = variant.replace(/^\-/, "");
+                    }
+                    return variant;
+                },
+                list: function() {
+                    return "";
+                }
+            },
+            productList: {
+                currencyCode: function() {
+                    return "";
+                },
+                products: {
+                    container: function() {
+                        $(".ProductList_Custom_UL li");
+                    },
+                    id: function() {
+                        return $(this).find('input[name="ProductID"]').val();
+                    },
+                    name: function() {
+                        return $(this).find(".name").text();
+                    },
+                    price: function() {
+                        return $(this).find(".price").text();
+                    },
+                    brand: function() {
+                        return "";
+                    },
+                    category: function() {
+                        return "";
+                    },
+                    variant: function() {
+                        return "";
+                    },
+                    list: function() {
+                        return "Category";
+                    }
+                }
+            },
+            purchase: {
+                transactionId: function() {
+                    return "";
+                },
+                affiliation: function() {
+                    return "";
+                },
+                revenue: function() {
+                    return "";
+                },
+                tax: function() {
+                    return "";
+                },
+                shipping: function() {
+                    return "";
+                },
+                coupon: function() {
+                    return "";
+                },
+                products: {
+                    container: function() {
+                        return $(".BasketLine_OrderStep4");
+                    },
+                    // this method will return the master's product number per default
+                    // this presumes you use the default Dandomain product number scheme
+                    // which is "{product number}-{variant}"
+                    id: function() {
+                        return $(this).find('td:eq(2)').text();
+                    },
+                    name: function() {
+                        return $(this).find('td:eq(4)').text();
+                    },
+                    price: function() {
+                        return $(this).find('td:eq(6)').text();
+                    },
+                    brand: function() {
+                        return "";
+                    },
+                    category: function() {
+                        return "";
+                    },
+                    variant: function() {
+                        return "";
+                    },
+                    quantity: function() {
+                        return $(this).find('td:eq(0)').text();
+                    }
+                }
             }
         }
     };
@@ -45,20 +163,61 @@
 
     var ddgtm = {
         analyticsEcommerce: function () {
+            var id, name, price, brand, category, variant, list, currencyCode, position;
+
             if(page.isProduct()) {
+                id          = selectors.pages.product.id.call();
+                name        = selectors.pages.product.name.call();
+                price       = selectors.pages.product.price.call();
+                brand       = selectors.pages.product.brand.call();
+                category    = selectors.pages.product.category.call();
+                variant     = selectors.pages.product.variant.call();
+                list        = selectors.pages.product.list.call();
+
                 dataLayerObject.ecommerce = {
                     'detail': {
-                        'actionField': {'list': $(selectors.pages.product.list).text()},
+                        'actionField': { 'list': list },
                         'products': [{
-                            'id': $(selectors.pages.product.id).text(),
-                            'name': $(selectors.pages.product.name).text(),
-                            'price': $(selectors.pages.product.price).text(),
-                            'brand': $(selectors.pages.product.brand).text(),
-                            'category': $(selectors.pages.product.category).text(),
-                            'variant': $(selectors.pages.product.variant).text()
+                            'id':       id,
+                            'name':     name,
+                            'price':    price,
+                            'brand':    brand,
+                            'category': category,
+                            'variant':  variant
                         }]
                     }
                 };
+            }
+            if(page.isProductList()) {
+                currencyCode = selectors.pages.productList.currencyCode.call();
+
+                dataLayerObject.ecommerce = {
+                    'currencyCode': selectors.pages.productList.currencyCode.call(),
+                    'impressions': []
+                };
+
+                var $products = selectors.pages.productList.products.container.call();
+                $products.each(function(i) {
+                    id          = selectors.pages.productList.products.id.call(this);
+                    name        = selectors.pages.productList.products.name.call(this);
+                    price       = selectors.pages.productList.products.price.call(this);
+                    brand       = selectors.pages.productList.products.brand.call(this);
+                    category    = selectors.pages.productList.products.category.call(this);
+                    variant     = selectors.pages.productList.products.variant.call(this);
+                    list        = selectors.pages.productList.products.list.call(this);
+                    position    = i + 1;
+
+                    dataLayerObject.ecommerce.impressions.push({
+                        'id':       id,
+                        'name':     name,
+                        'price':    price,
+                        'brand':    brand,
+                        'category': category,
+                        'variant':  variant,
+                        'list':     list,
+                        'position': position
+                    });
+                });
             }
         },
         populateDataLayer: function(eventName) {
