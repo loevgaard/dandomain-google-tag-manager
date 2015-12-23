@@ -38,7 +38,7 @@
                 url = location.href;
             }
             var isProduct = url.match(/\-[0-9]+p\.html/i) != null;
-            log("Is Product Page?" + (isProduct ? 'Yes' : 'No'));
+            log("Is Product Page? " + (isProduct ? 'Yes' : 'No'));
             return isProduct;
         },
         /**
@@ -52,7 +52,7 @@
                 url = location.href;
             }
             var isProductList = url.match(/\-[0-9]+(s|c)[0-9]+\.html/i) != null;
-            log("Is Product List Page?" + (isProductList ? 'Yes' : 'No'));
+            log("Is Product List Page? " + (isProductList ? 'Yes' : 'No'));
             return isProductList;
         },
         /**
@@ -64,7 +64,7 @@
                 url = location.href;
             }
             var isPurchase = url.match(/\/shop\/order4\.html/i) != null;
-            log("Is Purchase Page?" + (isPurchase ? 'Yes' : 'No'));
+            log("Is Purchase Page? " + (isPurchase ? 'Yes' : 'No'));
             return isPurchase;
         }
     };
@@ -186,7 +186,7 @@
 
     var ddgtm = {
         analyticsEcommerce: function () {
-            var id, name, price, brand, category, variant, list, currencyCode, position;
+            var id, name, price, brand, category, variant, list, currencyCode, position, transactionId, affiliation, revenue, tax, shipping, quantity, coupon;
 
             if(page.isProduct()) {
                 id          = selectors.pages.product.id.call();
@@ -220,7 +220,6 @@
                 };
 
                 var $products = selectors.pages.productList.products.container.call();
-                log($products);
                 $products.each(function(i) {
                     id          = selectors.pages.productList.products.id.call(this);
                     name        = selectors.pages.productList.products.name.call(this);
@@ -240,6 +239,72 @@
                         'variant':  variant,
                         'list':     list,
                         'position': position
+                    });
+                });
+            }
+            if(page.isPurchase()) {
+                transactionId   = selectors.pages.purchase.transactionId.call();
+                affiliation     = selectors.pages.purchase.affiliation.call();
+                revenue         = selectors.pages.purchase.revenue.call();
+                tax             = selectors.pages.purchase.tax.call();
+                shipping        = selectors.pages.purchase.shipping.call();
+                coupon          =  selectors.pages.purchase.coupon.call();
+
+                dataLayerObject.ecommerce = {
+                    'purchase': {
+                        'actionField': {
+                            'id': transactionId,
+                            'affiliation': affiliation,
+                            'revenue': revenue, // Total transaction value (incl. tax and shipping)
+                            'tax': tax,
+                            'shipping': shipping,
+                            'coupon': coupon
+                        },
+                        'products': [
+                            {
+                                'name': 'Triblend Android T-Shirt',     // Name or ID is required.
+                                'id': '12345',
+                                'price': '15.25',
+                                'brand': 'Google',
+                                'category': 'Apparel',
+                                'variant': 'Gray',
+                                'quantity': 1,
+                                'coupon': ''                            // Optional fields may be omitted or set to empty string.
+                            },
+                            {
+                                'name': 'Donut Friday Scented T-Shirt',
+                                'id': '67890',
+                                'price': '33.75',
+                                'brand': 'Google',
+                                'category': 'Apparel',
+                                'variant': 'Black',
+                                'quantity': 1
+                            }
+                        ]
+                    }
+                }
+
+                var $products = selectors.pages.purchase.products.container.call();
+                $products.each(function(i) {
+                    id          = selectors.pages.purchase.products.id.call(this);
+                    name        = selectors.pages.purchase.products.name.call(this);
+                    price       = selectors.pages.purchase.products.price.call(this);
+                    brand       = selectors.pages.purchase.products.brand.call(this);
+                    category    = selectors.pages.purchase.products.category.call(this);
+                    variant     = selectors.pages.purchase.products.variant.call(this);
+                    quantity    = selectors.pages.purchase.products.quantity.call(this);
+                    coupon      = selectors.pages.purchase.products.coupon.call(this);
+                    position    = i + 1;
+
+                    dataLayerObject.ecommerce.purchase.products.push({
+                        'id':       id,
+                        'name':     name,
+                        'price':    price,
+                        'brand':    brand,
+                        'category': category,
+                        'variant':  variant,
+                        'quantity': quantity,
+                        'coupon':   coupon
                     });
                 });
             }
