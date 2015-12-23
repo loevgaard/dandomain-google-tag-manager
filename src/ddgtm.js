@@ -3,9 +3,7 @@
     var dataLayerName = 'dataLayer';
 
     function log(str) {
-        if(window.console) {
-            console.log(str);
-        }
+        debug && window.console && window.console.log(str);
     }
 
     /**
@@ -16,15 +14,24 @@
      * @returns {*}
      */
     function getProductNumberParts(productNumber) {
-        var m = productNumber.match(/^([0-9]+)\-(.*)$/);
+        var obj = {
+            'master'    : productNumber,
+            'variant'   : ''
+        };
+
+        var m = productNumber.match(/^([0-9]+)(\-(.*))?$/);
         if(!m) {
-            return null;
+            return obj;
         }
 
-        return {
-            'master'    : m[1],
-            'variant'   : m[2]
-        };
+        if(m[1] != undefined) {
+            obj.master = m[1];
+        }
+        if(m[3] != undefined) {
+            obj.variant = m[3];
+        }
+
+        return obj;
     }
     var page = {
         /**
@@ -108,7 +115,7 @@
                         return $(".ProductList_Custom_UL li");
                     },
                     id: function() {
-                        return $(this).find('input[name="ProductID"]').val();
+                        return getProductNumberParts($(this).find('input[name="ProductID"]').val()).master;
                     },
                     name: function() {
                         return $(this).find(".name").text();
@@ -123,7 +130,7 @@
                         return "";
                     },
                     variant: function() {
-                        return "";
+                        return getProductNumberParts($(this).find('input[name="ProductID"]').val()).variant;
                     },
                     list: function() {
                         return "Category";
@@ -157,7 +164,7 @@
                     // this presumes you use the default Dandomain product number scheme
                     // which is "{product number}-{variant}"
                     id: function() {
-                        return $(this).find('td:eq(2)').text();
+                        return getProductNumberParts($(this).find('td:eq(2)').text()).master;
                     },
                     name: function() {
                         return $(this).find('td:eq(4)').text();
@@ -172,7 +179,7 @@
                         return "";
                     },
                     variant: function() {
-                        return "";
+                        return getProductNumberParts($(this).find('td:eq(2)').text()).variant;
                     },
                     quantity: function() {
                         return $(this).find('td:eq(0)').text();
