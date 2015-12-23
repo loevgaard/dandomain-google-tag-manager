@@ -220,6 +220,7 @@
                 };
 
                 var $products = selectors.pages.productList.products.container.call();
+                log($products);
                 $products.each(function(i) {
                     id          = selectors.pages.productList.products.id.call(this);
                     name        = selectors.pages.productList.products.name.call(this);
