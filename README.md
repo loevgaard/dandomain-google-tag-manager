@@ -1,11 +1,32 @@
 # A Javascript Library for Google Tag Manager on Dandomain
-Because of the fact that we cannot manipulate server side code on Dandomain we can't populate dataLayer variables before the DOM loads.
+Dandomain is a Danish hosting provider who also hosts one of the biggest Danish webshop system, [Dandomain Webshop](https://www.dandomain.dk/webshop/overblik).
+
+On Dandomain we can't manipulate server side code so we can't populate the dataLayer variable before the DOM loads.
+
+This library makes the process of integrating the Dandomain Webshop with Google Tag Manager a bit easier.
+
+It consists of several "modules" or methods that will eventually populate the data layer with relevant values.
 
 ## Implementation
 ### Product Numbers
-The script presumes that you use the default Dandomain product numbering scheme which is [number]-[variant]. If you use another scheme, you have to implement the method ddgtm.parseProductNumber().
+The script presumes that you use the default Dandomain product numbering scheme which is `[number]-[variant]`. If you use another scheme, you have to implement the method `ddgtm.parseProductNumber()`.
 
-### Checkout Success
+### Google Analytics Enhanced Ecommerce
+To implement [Google Analytics Enhanced Ecommerce](https://developers.google.com/analytics/devguides/collection/analyticsjs/enhanced-ecommerce) features, use this code
+
+```html
+...
+
+<script>
+ddgtm.analyticsEcommerce();
+ddgtm.populateDataLayer();
+</script>
+</body>
+```
+
+This will fire an Google Tag Manager event named 'ddgtm' which you can use to fire your tags within Google Tag Manager.
+
+#### Checkout Success
 Insert the following tags on the checkout success page (Design > Tekster/knapper > Bestil step 4 (Ordrebekræftelse))
 
 ```html
@@ -18,7 +39,7 @@ Insert the following tags on the checkout success page (Design > Tekster/knapper
 
 ![ddgtm checkout success parameters](doc/images/ddgtm-checkout-success.png)
 
-### Product Template
+#### Product Template
 Insert the following tags on the product template
 
 ```html
@@ -26,7 +47,7 @@ Insert the following tags on the product template
 <div id="ddgtm-category" style="display:none">[[ProdCatName]]</div>
 ```
 
-### Product List Template
+#### Product List Template
 Insert the following tags on the product list template
 
 ```html

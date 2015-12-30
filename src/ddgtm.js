@@ -1,4 +1,5 @@
 (function ($) {
+    "use strict";
     var debug = true;
     var dataLayerName = 'dataLayer';
 
@@ -197,8 +198,7 @@
                 "affiliation": "Webshop"
             }, options);
 
-            var id, name, price, brand, category, variant, list, currencyCode, position, transactionId, affiliation,
-                revenue, tax, shipping, quantity, coupon, $products;
+            var currencyCode, $products;
 
             if(page.isProduct()) {
                 dataLayerObject.ecommerce = {
