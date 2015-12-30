@@ -14,7 +14,21 @@
 
     var page = {
         /**
-         * Matches a product page (i.e. 1231p.html)
+         * Returns true if the current page is the frontpage (i.e. url contains /shop/frontpage.html)
+         *
+         * @param url
+         * @returns boolean
+         */
+        isFrontpage: function (url) {
+            if(!url) {
+                url = window.CurrencyReturnUrl;
+            }
+            var isFrontpage = url.match(/\/shop\/frontpage\.html/i) != null;
+            log("Is Frontpage? " + (isFrontpage ? 'Yes' : 'No'));
+            return isFrontpage;
+        },
+        /**
+         * Matches a product page (i.e. 1234p.html)
          *
          * @param url
          * @returns boolean
@@ -28,7 +42,7 @@
             return isProduct;
         },
         /**
-         * A product list is either a category page (c1.html) or a category page with sub categories (s1.html)
+         * A product list is either a category page (.*-1234c1.html) or a category page with sub categories (.*-1234s1.html)
          *
          * @param url
          * @returns boolean
@@ -42,6 +56,22 @@
             return isProductList;
         },
         /**
+         * Returns true if the current page is the cart (i.e. url contains /shop/showbasket.html)
+         *
+         * @param url
+         * @returns boolean
+         */
+        isCart: function (url) {
+            if(!url) {
+                url = window.CurrencyReturnUrl;
+            }
+            var isCart = url.match(/\/shop\/showbasket\.html/i) != null;
+            log("Is Cart Page? " + (isCart ? 'Yes' : 'No'));
+            return isCart;
+        },
+        /**
+         * Returns true if the customer completed a purchase (i.e. url contains /shop/order4.html)
+         *
          * @param url
          * @returns boolean
          */
@@ -66,7 +96,11 @@
                     return $('span[itemprop="name"]:first').text();
                 },
                 price: function() {
-                    return $('span[itemprop="price"]:first').text().replace(config.thousandsSeparator, "").replace(config.decimalPoint, ".");
+                    return $('span[itemprop="price"]:first')
+                        .text()
+                        .replace(/[^0-9,\.]+/i, "")
+                        .replace(config.thousandsSeparator, "")
+                        .replace(config.decimalPoint, ".");
                 },
                 brand: function() {
                     return $('span[itemprop="brand"]:first').text();
@@ -104,13 +138,17 @@
                         return $(".ProductList_Custom_UL li");
                     },
                     id: function() {
-                        return ddgtm.parseProductNumber($(this).find('input[name="ProductID"]').val()).master;
+                        return $(this).find('input[name="ProductID"]').val();
                     },
                     name: function() {
                         return $(this).find(".name").text();
                     },
                     price: function() {
-                        return $(this).find(".price").text().replace(config.thousandsSeparator, "").replace(config.decimalPoint, ".");
+                        return $(this).find(".price")
+                            .text()
+                            .replace(/[^0-9,\.]+/i, "")
+                            .replace(config.thousandsSeparator, "")
+                            .replace(config.decimalPoint, ".");
                     },
                     brand: function() {
                         return $(this).find(".brand").text();
@@ -130,6 +168,23 @@
                     },
                     list: function() {
                         return "Category";
+                    }
+                }
+            },
+            cart: {
+                products: {
+                    container: function() {
+                        return $("table.TableLines_ShowBasket tr.BackgroundColor1_ShowBasket, table.TableLines_ShowBasket tr.BackgroundColor2_ShowBasket");
+                    },
+                    id: function() {
+                        return $(this).find(".ShowBasket_ProductNumber_DIV").text();
+                    },
+                    price: function() {
+                        return $(this).find(".ShowBasket_ProductLine_TotalPrice_TD")
+                            .text()
+                            .replace(/[^0-9,\.]+/i, "")
+                            .replace(config.thousandsSeparator, "")
+                            .replace(config.decimalPoint, ".");
                     }
                 }
             },
@@ -162,13 +217,17 @@
                     // this presumes you use the default Dandomain product number scheme
                     // which is "{product number}-{variant}"
                     id: function() {
-                        return ddgtm.parseProductNumber($(this).find('td:eq(2)').text()).master;
+                        return $(this).find('td:eq(2)').text();
                     },
                     name: function() {
                         return $(this).find('td:eq(4)').text();
                     },
                     price: function() {
-                        return $(this).find('td:eq(6)').text().replace(config.thousandsSeparator, "").replace(config.decimalPoint, ".");
+                        return $(this).find('td:eq(6)')
+                            .text()
+                            .replace(/[^0-9,\.]+/i, "")
+                            .replace(config.thousandsSeparator, "")
+                            .replace(config.decimalPoint, ".");;
                     },
                     brand: function() {
                         return "";
@@ -193,6 +252,11 @@
     var dataLayerObject = {};
 
     var ddgtm = {
+        /**
+         * This is the implementation of the Google Analytics Enhanced Ecommerce
+         *
+         * @param options
+         */
         analyticsEcommerce: function (options) {
             options = $.extend({
                 "affiliation": "Webshop"
@@ -205,7 +269,7 @@
                     'detail': {
                         'actionField': { 'list': selectors.pages.product.list.call() },
                         'products': [{
-                            'id':       selectors.pages.product.id.call(),
+                            'id':       ddgtm.parseProductNumber(selectors.pages.product.id.call()).master,
                             'name':     selectors.pages.product.name.call(),
                             'price':    selectors.pages.product.price.call(),
                             'brand':    selectors.pages.product.brand.call(),
@@ -226,7 +290,7 @@
                 $products = selectors.pages.productList.products.container.call();
                 $products.each(function(i) {
                     dataLayerObject.ecommerce.impressions.push({
-                        'id':       selectors.pages.productList.products.id.call(this),
+                        'id':       ddgtm.parseProductNumber(selectors.pages.productList.products.id.call(this)).master,
                         'name':     selectors.pages.productList.products.name.call(this),
                         'price':    selectors.pages.productList.products.price.call(this),
                         'brand':    selectors.pages.productList.products.brand.call(this),
@@ -250,12 +314,12 @@
                         },
                         'products': []
                     }
-                }
+                };
 
                 $products = selectors.pages.purchase.products.container.call();
-                $products.each(function(i) {
+                $products.each(function() {
                     dataLayerObject.ecommerce.purchase.products.push({
-                        'id':       selectors.pages.purchase.products.id.call(this),
+                        'id':       ddgtm.parseProductNumber(selectors.pages.purchase.products.id.call(this)).master,
                         'name':     selectors.pages.purchase.products.name.call(this),
                         'price':    selectors.pages.purchase.products.price.call(this),
                         'brand':    selectors.pages.purchase.products.brand.call(this),
@@ -265,6 +329,55 @@
                         'coupon':   selectors.pages.purchase.products.coupon.call(this)
                     });
                 });
+            }
+        },
+        adWordsRemarketing: function() {
+            var productNumbers, totalValue, $products;
+
+            dataLayerObject.google_tag_params = {
+                ecomm_prodid:       "",
+                ecomm_pagetype:     "other",
+                ecomm_totalvalue:   ""
+            };
+
+            if(page.isFrontpage()) {
+                dataLayerObject.google_tag_params.ecomm_pagetype = "home";
+            }
+            if(page.isProduct()) {
+                dataLayerObject.google_tag_params.ecomm_pagetype    = "product";
+                dataLayerObject.google_tag_params.ecomm_prodid      = selectors.pages.product.id.call();
+                dataLayerObject.google_tag_params.ecomm_totalvalue  = selectors.pages.product.price.call();
+            }
+            if(page.isProductList()) {
+                dataLayerObject.google_tag_params.ecomm_pagetype = "category";
+            }
+            if(page.isCart()) {
+                productNumbers  = [];
+                totalValue      = 0;
+
+                $products = selectors.pages.cart.products.container.call();
+                $products.each(function() {
+                    productNumbers.push(selectors.pages.cart.products.id.call(this));
+                    totalValue += parseFloat(selectors.pages.cart.products.price.call(this));
+                });
+
+                dataLayerObject.google_tag_params.ecomm_pagetype    = "cart";
+                dataLayerObject.google_tag_params.ecomm_prodid      = productNumbers;
+                dataLayerObject.google_tag_params.ecomm_totalvalue  = totalValue;
+            }
+            if(page.isPurchase()) {
+                productNumbers  = [];
+                totalValue      = 0;
+
+                $products = selectors.pages.purchase.products.container.call();
+                $products.each(function() {
+                    productNumbers.push(selectors.pages.purchase.products.id.call(this));
+                    totalValue += parseFloat(selectors.pages.purchase.products.price.call(this));
+                });
+
+                dataLayerObject.google_tag_params.ecomm_pagetype    = "purchase";
+                dataLayerObject.google_tag_params.ecomm_prodid      = productNumbers;
+                dataLayerObject.google_tag_params.ecomm_totalvalue  = totalValue;
             }
         },
         populateDataLayer: function(eventName) {
@@ -311,7 +424,7 @@
             selectors = val;
         },
         setConfig: function(c) {
-            $.extend(true, config, c);
+            config = $.extend(true, config, c);
         },
         debug: function(toggle) {
             debug = toggle;

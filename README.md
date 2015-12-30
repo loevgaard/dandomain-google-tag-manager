@@ -1,5 +1,5 @@
 # A Javascript Library for Google Tag Manager on Dandomain
-Dandomain is a Danish hosting provider who also hosts one of the biggest Danish webshop system, [Dandomain Webshop](https://www.dandomain.dk/webshop/overblik).
+Dandomain is a Danish hosting provider who also hosts one of the biggest Danish webshop systems, [Dandomain Webshop](https://www.dandomain.dk/webshop/overblik).
 
 On Dandomain we can't manipulate server side code so we can't populate the dataLayer variable before the DOM loads.
 
@@ -9,7 +9,7 @@ It consists of several "modules" or methods that will eventually populate the da
 
 ## Implementation
 ### Product Numbers
-The script presumes that you use the default Dandomain product numbering scheme which is `[number]-[variant]`. If you use another scheme, you have to implement the method `ddgtm.parseProductNumber()`.
+The library presumes that you use the default Dandomain product numbering scheme which is `[number]-[variant]` where `[number]` matches the regexp `[0-9]+` and `[variant]` matches the regexp `.*`. If you use another scheme, you have to implement the method `ddgtm.parseProductNumber()`.
 
 ### Google Analytics Enhanced Ecommerce
 To implement [Google Analytics Enhanced Ecommerce](https://developers.google.com/analytics/devguides/collection/analyticsjs/enhanced-ecommerce) features, use this code
@@ -18,13 +18,15 @@ To implement [Google Analytics Enhanced Ecommerce](https://developers.google.com
 ...
 
 <script>
-ddgtm.analyticsEcommerce();
-ddgtm.populateDataLayer();
+$(function() {
+    ddgtm.analyticsEcommerce();
+    ddgtm.populateDataLayer();
+});
 </script>
 </body>
 ```
 
-This will fire an Google Tag Manager event named 'ddgtm' which you can use to fire your tags within Google Tag Manager.
+This will fire an Google Tag Manager event named `ddgtm` which you can use to fire your tags within Google Tag Manager.
 
 #### Checkout Success
 Insert the following tags on the checkout success page (Design > Tekster/knapper > Bestil step 4 (Ordrebekræftelse))
@@ -53,3 +55,6 @@ Insert the following tags on the product list template
 ```html
 <div style="display:none" class="brand">[[Manufactors]]</div>
 ```
+
+### AdWords Dynamic Remarketing
+[AdWords Dynamic Remarketing](https://support.google.com/tagmanager/answer/6106009?hl=en)
