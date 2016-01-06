@@ -90,7 +90,7 @@
             product: {
                 id: function() {
                     // this is a global variable defined by Dandomain
-                    return window.ProductVariantMasterID;
+                    return window.ProductNumber;
                 },
                 name: function() {
                     return $('span[itemprop="name"]:first').text();
