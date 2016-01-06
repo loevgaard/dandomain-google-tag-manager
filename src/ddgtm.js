@@ -145,10 +145,16 @@
                     },
                     price: function() {
                         return $(this).find(".price")
-                            .text()
-                            .replace(/[^0-9,\.]+/i, "")
-                            .replace(config.thousandsSeparator, "")
-                            .replace(config.decimalPoint, ".");
+                            .contents() // contrary to text() this will return text nodes (which we need)
+                            .filter(function() {
+                                return this.nodeType === 3;
+                            }) // will filter out all nodes that are not text nodes
+                            .first() // retrieves the first text node
+                            .text() // gets the text from that node
+                            .replace(/[^0-9,\.]+/i, "") // removes everything but numbers, commas and dots
+                            .replace(config.thousandsSeparator, "") // removes thousands separators
+                            .replace(config.decimalPoint, ".") // finally converts to US numbers (using dot instead of any other decimal separator (i.e. comma)
+                        ;
                     },
                     brand: function() {
                         return $(this).find(".brand").text();
