@@ -2,6 +2,7 @@
     "name": "loevgaard/dandomain-google-tag-manager",
     "description": "This library will make the integration between Dandomain and Google Tag Manager a lot easier",
     "minimum-stability": "dev",
+    "type": "library",
     "license": "MIT",
     "authors": [
         {
