@@ -487,6 +487,9 @@
                 log(obj[eventGroup]);
                 window[dataLayerName].push(obj[eventGroup]);
             }
+
+            // reset dataLayerQueue
+            dataLayerQueue = [];
         },
         /**
          * Returns null if product number format is not {product number}-{variant}
