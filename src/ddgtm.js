@@ -198,6 +198,14 @@
                 transactionId: function() {
                     return $("#ddgtm-order-id").text();
                 },
+                currency: function() {
+                    return $("#ddgtm-currency")
+                        .replace("€", "EUR")
+                        .replace("$", "EUR")
+                        .replace("£", "GBP")
+                        .replace(/[^a-zA-Z]+/, "")
+                    ;
+                },
                 affiliation: function() {
                     return this.toString();
                 },
@@ -210,7 +218,11 @@
                     return (revenue - revenueExclVat).toFixed(2);
                 },
                 shipping: function() {
-                    return $("#ddgtm-shipping").text().replace(config.thousandsSeparator, "").replace(config.decimalPoint, ".");
+                    return $("#ddgtm-shipping")
+                        .text()
+                        .replace(config.thousandsSeparator, "")
+                        .replace(config.decimalPoint, ".")
+                    ;
                 },
                 coupon: function() {
                     return "";
@@ -384,6 +396,47 @@
                 dataLayerObject.google_tag_params.ecomm_pagetype    = "purchase";
                 dataLayerObject.google_tag_params.ecomm_prodid      = productNumbers;
                 dataLayerObject.google_tag_params.ecomm_totalvalue  = totalValue;
+            }
+        },
+        facebookPixel: function() {
+            if (typeof fbq != 'function') {
+                log('The Facebook Pixel JavaScript library should be loaded before calling facebookPixel()');
+                return false;
+            }
+
+            var ids = [], $products;
+
+            if(page.isProduct()) {
+                fbq('track', 'ViewContent', {
+                    content_ids:    selectors.pages.product.id.call(),
+                    content_type:   'product'
+                });
+            }
+            if(page.isProductList()) {
+                ids = [];
+                $products = selectors.pages.productList.products.container.call();
+                $products.each(function(i) {
+                    ids.push(selectors.pages.productList.products.id.call(this));
+                });
+                fbq('track', 'ViewContent', {
+                    content_ids:    ids,
+                    content_type:   'product'
+                });
+            }
+            if(page.isPurchase()) {
+                ids = [];
+                $products = selectors.pages.purchase.products.container.call();
+                $products.each(function(i) {
+                    ids.push(selectors.pages.purchase.products.id.call(this));
+                });
+
+                fbq('track', 'Purchase', {
+                    order_id:       selectors.pages.purchase.transactionId.call(),
+                    currency:       selectors.pages.purchase.currency.call(),
+                    value:          selectors.pages.purchase.revenue.call(),
+                    content_ids:    ids,
+                    content_type:   'product'
+                });
             }
         },
         populateDataLayer: function(eventName) {

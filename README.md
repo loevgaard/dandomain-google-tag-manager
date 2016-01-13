@@ -32,11 +32,12 @@ This will fire an Google Tag Manager event named `ddgtm` which you can use to fi
 Insert the following tags on the checkout success page (Design > Tekster/knapper > Bestil step 4 (Ordrebekræftelse))
 
 ```html
-<!-- Transaction tracking variables -->
+<!-- ddgtm tracking variables -->
 <div id="ddgtm-order-id" style="display:none">[[OrderID]]</div>
 <div id="ddgtm-revenue" style="display:none">[[AdWordsSubTotalInclVAT]]</div>
 <div id="ddgtm-revenue-excl-vat" style="display:none">[[AdWordsSubTotalExclVAT]]</div>
 <div id="ddgtm-shipping" style="display:none">[[ShippingFeeInclVAT]]</div>
+<div id="ddgtm-currency" style="display:none">[[SubTotalInclVAT]]</div>
 ```
 
 ![ddgtm checkout success parameters](doc/images/ddgtm-checkout-success.png)
