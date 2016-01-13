@@ -481,12 +481,17 @@
             log(dataLayerQueue);
             var obj = {};
             for(var i = 0; i < dataLayerQueue.length; i++) {
-                obj = $.extend(true, obj, dataLayerQueue[i]);
+                if(!(dataLayerQueue[i].event in obj)) {
+                    obj[dataLayerQueue[i].event] = {};
+                }
+                obj[dataLayerQueue[i].event] = $.extend(true, obj[dataLayerQueue[i].event], dataLayerQueue[i]);
             }
 
             log('Pushing data layer:');
-            log(obj);
-            window[dataLayerName].push(obj);
+            for(var eventGroup in obj) {
+                log(obj[eventGroup]);
+                window[dataLayerName].push(obj[eventGroup]);
+            }
         },
         /**
          * Returns null if product number format is not {product number}-{variant}
