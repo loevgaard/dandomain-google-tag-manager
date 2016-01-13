@@ -24,7 +24,6 @@
                 url = window.CurrencyReturnUrl;
             }
             var isFrontpage = url.match(/\/shop\/frontpage\.html/i) != null;
-            log("Is Frontpage? " + (isFrontpage ? 'Yes' : 'No'));
             return isFrontpage;
         },
         /**
@@ -38,7 +37,6 @@
                 url = window.CurrencyReturnUrl;
             }
             var isProduct = url.match(/\-[0-9]+p\.html/i) != null;
-            log("Is Product Page? " + (isProduct ? 'Yes' : 'No'));
             return isProduct;
         },
         /**
@@ -52,7 +50,6 @@
                 url = window.CurrencyReturnUrl;
             }
             var isProductList = url.match(/\-[0-9]+(s|c)[0-9]+\.html/i) != null;
-            log("Is Product List Page? " + (isProductList ? 'Yes' : 'No'));
             return isProductList;
         },
         /**
@@ -66,7 +63,6 @@
                 url = window.CurrencyReturnUrl;
             }
             var isCart = url.match(/\/shop\/showbasket\.html/i) != null;
-            log("Is Cart Page? " + (isCart ? 'Yes' : 'No'));
             return isCart;
         },
         /**
@@ -80,7 +76,6 @@
                 url = window.CurrencyReturnUrl;
             }
             var isPurchase = url.match(/\/shop\/order4\.html/i) != null;
-            log("Is Purchase Page? " + (isPurchase ? 'Yes' : 'No'));
             return isPurchase;
         }
     };
