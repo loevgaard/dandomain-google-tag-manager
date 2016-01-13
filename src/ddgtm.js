@@ -267,20 +267,25 @@
         }
     };
 
-    var dataLayerObject = {};
+    var dataLayerQueue = [];
 
     var ddgtm = {
         /**
          * This is the implementation of the Google Analytics Enhanced Ecommerce
          *
+         * @param event
          * @param options
          */
-        analyticsEcommerce: function (options) {
+        analyticsEcommerce: function (event, options) {
             options = $.extend({
                 "affiliation": "Webshop"
             }, options);
 
-            var currencyCode, $products;
+            if(!event) {
+                event = 'analytics';
+            }
+
+            var dataLayerObject = {'event' : event}, currencyCode, $products;
 
             if(page.isProduct()) {
                 dataLayerObject.ecommerce = {
@@ -348,9 +353,15 @@
                     });
                 });
             }
+
+            this.populateDataLayer(dataLayerObject);
         },
-        adWordsRemarketing: function() {
-            var productNumbers, totalValue, $products;
+        adWordsRemarketing: function(event) {
+            if(!event) {
+                event = 'adWordsRemarketing';
+            }
+
+            var dataLayerObject = {'event' : event}, productNumbers, totalValue, $products;
 
             dataLayerObject.google_tag_params = {
                 ecomm_prodid:       "",
@@ -397,66 +408,85 @@
                 dataLayerObject.google_tag_params.ecomm_prodid      = productNumbers;
                 dataLayerObject.google_tag_params.ecomm_totalvalue  = totalValue;
             }
+
+            this.populateDataLayer(dataLayerObject);
         },
-        facebookPixel: function() {
+        facebookPixel: function(event) {
             if (typeof fbq != 'function') {
                 log('The Facebook Pixel JavaScript library should be loaded before calling facebookPixel()');
                 return false;
             }
 
-            var ids = [], $products;
+            if(!event) {
+                event = 'fbq';
+            }
+
+            var dataLayerObject = {'event' : event}, ids = [], $products;
 
             if(page.isProduct()) {
-                /**
-                 * @TODO Change this way to do things. dataLayer should be used instead
-                 */
-                $(function() {
-                    fbq('track', 'ViewContent', {
+                dataLayerObject.facebook = {
+                    'method' : 'track',
+                    'action' : 'ViewContent',
+                    'parameters' : {
                         content_ids:    selectors.pages.product.id.call(),
                         content_type:   'product'
-                    });
-                });
+                    }
+                };
             }
             if(page.isProductList()) {
-                $(function() {
-                    ids = [];
-                    $products = selectors.pages.productList.products.container.call();
-                    $products.each(function (i) {
-                        ids.push(selectors.pages.productList.products.id.call(this));
-                    });
-                    fbq('track', 'ViewContent', {
-                        content_ids: ids,
-                        content_type: 'product'
-                    });
+                ids = [];
+                $products = selectors.pages.productList.products.container.call();
+                $products.each(function (i) {
+                    ids.push(selectors.pages.productList.products.id.call(this));
                 });
+
+                dataLayerObject.facebook = {
+                    'method' : 'track',
+                    'action' : 'ViewContent',
+                    'parameters' : {
+                        content_ids:    ids,
+                        content_type:   'product'
+                    }
+                };
             }
             if(page.isPurchase()) {
-                $(function() {
-                    ids = [];
-                    $products = selectors.pages.purchase.products.container.call();
-                    $products.each(function() {
-                        ids.push(selectors.pages.purchase.products.id.call(this));
-                    });
+                ids = [];
+                $products = selectors.pages.purchase.products.container.call();
+                $products.each(function() {
+                    ids.push(selectors.pages.purchase.products.id.call(this));
+                });
 
-                    fbq('track', 'Purchase', {
+                dataLayerObject.facebook = {
+                    'method' : 'track',
+                    'action' : 'Purchase',
+                    'parameters' : {
                         order_id:       selectors.pages.purchase.transactionId.call(),
                         currency:       selectors.pages.purchase.currency.call(),
                         value:          selectors.pages.purchase.revenue.call(),
                         content_ids:    ids,
                         content_type:   'product'
-                    });
-                });
+                    }
+                };
             }
-        },
-        populateDataLayer: function(eventName) {
-            if(!eventName) {
-                eventName = 'ddgtm';
-            }
-            dataLayerObject.event = eventName;
 
-            log("Pushing data layer:");
-            log(dataLayerObject);
-            window[dataLayerName].push(dataLayerObject);
+            this.populateDataLayer(dataLayerObject);
+        },
+        populateDataLayer: function(obj) {
+            log("Populating data layer:");
+            log(obj);
+            dataLayerQueue.push(obj);
+        },
+        flushDataLayerQueue: function() {
+            log('Flusing data layer queue:');
+            log(dataLayerQueue);
+            var obj = {};
+            for(var i = 0; i < dataLayerQueue.length; i++) {
+                obj = $.extend(true, obj, dataLayerQueue[i]);
+            }
+
+            log('Pushing data layer:');
+            log(obj);
+            window[dataLayerName].push(obj);
         },
         /**
          * Returns null if product number format is not {product number}-{variant}
